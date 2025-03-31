@@ -1,247 +1,198 @@
-XSS Optimizer
-=============
+# XSS Optimizer
 
-XSS Optimizer is a **Burp Suite extension** that integrates with your pentesting workflow to automatically identify and exploit potential XSS vectors. It employs a **Genetic Algorithm (GA)** to adaptively generate and refine payloads and bypasses for different injection contexts.
+XSS Optimizer is a **Burp Suite extension** designed to automatically identify and exploit potential Cross-Site Scripting (XSS) vectors. It leverages a **Genetic Algorithm (GA)** to adaptively refine payloads and bypass filters in real time, accelerating the discovery of complex or partially filtered injection points.
 
-Table of Contents
------------------
+---
 
-1.  [Features](#features)
-    
-2.  [Requirements](#requirements)
-    
-3.  [Installation](#installation)
-    
-4.  [Usage](#usage)
-    
-5.  [How It Works](#how-it-works)
-    
-    *   [Architecture Overview](#architecture-overview)
-        
-    *   [Genetic Algorithm Core](#genetic-algorithm-core)
-        
-    *   [Key Components](#key-components)
-        
-6.  [Configuration](#configuration)
-    
-7.  [Results and Logs](#results-and-logs)
-    
-8.  [Advanced Topics](#advanced-topics)
-    
-9.  [Limitations and Known Issues](#limitations-and-known-issues)
-    
-10.  [FAQ](#faq)
-    
-11.  [License](#license)
-    
+## Table of Contents
 
-Features
---------
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Requirements](#requirements)
+4. [Installation](#installation)
+5. [Usage](#usage)
+6. [How It Works](#how-it-works)
+   - [Architecture](#architecture)
+   - [Genetic-Algorithm Core](#genetic-algorithm-core)
+   - [Key Components](#key-components)
+7. [Configuration](#configuration)
+8. [Logs and Persistence](#logs-and-persistence)
+9. [Advanced Topics](#advanced-topics)
+10. [Known Limitations](#known-limitations)
+11. [FAQ](#faq)
+12. [License](#license)
 
-*   **Automated XSS Discovery**: Finds reflected and stored XSS across GET/POST parameters by injecting evolutionary-generated payloads.
-    
-*   **Genetic Algorithm Engine**: Adapts and improves payloads based on partial or full injection success.
-    
-*   **Context-Aware Placeholder** ∗optional∗\*optional\*∗optional∗: Potential to recognize HTML vs. attribute contexts.
-    
-*   **Integration with Burp Suite**: Captures requests in real time, populates a table with parameters, and allows sending them to XSS Optimizer.
-    
-*   **Logs and Persistence**:
-    
-    *   Writes a CSV (xss\_optimizer.csv) for each tested vector.
-        
-    *   Maintains a JSON-based effectiveness record (tech\_eff.json) to reward techniques that worked historically on specific URLs.
-        
+---
 
-Requirements
-------------
+## Overview
 
-*   **Burp Suite** (Professional or Community Edition) 2.x (or later).
-    
-*   **Jython** or **Python** environment if needed by Burp (depending on how you load the plugin, Java-based or Jython-based).
-    
-*   A recent version of **Java** (8+ recommended).
-    
+**XSS Optimizer** extends Burp Suite's capabilities by introducing a **GA-driven** approach to testing web parameters for XSS vulnerabilities. Instead of relying on a static list of payloads, it generates and mutates payloads over multiple “generations,” using feedback from the application’s responses to converge on more effective injection vectors.
 
-Installation
-------------
+Key highlights:
 
-1.  **Download the Extension**
-    
-    *   You can clone this repository or download the plugin .py file (e.g., XSSOptimizer-1.0.py).
-        
-2.  **Load Extension in Burp Suite**
-    
-    *   Launch Burp Suite.
-        
-    *   Go to **Extender** -> **Extensions** -> **Add**.
-        
-    *   Under Extension details:
-        
-        *   **Extension Type**: python
-            
-        *   **Extension File**: Select XSSOptimizer-1.0.py
-            
-    *   Wait for Burp Suite to load the extension. You should see a message: XSS Optimizer loaded successfully.
-        
-3.  **Verify Installation**
-    
-    *   A new tab named **XSS Optimizer** should appear at the top of Burp’s main interface.
-        
-    *   In the **Extender** -> **Extensions** tab, you should see the status: Loaded.
-        
+- Automates fuzzing and bypass attempts for XSS.
+- Integrates seamlessly with **Burp Suite**.
+- Stores logs for each attempt, providing a thorough record of injection attempts.
+- Maintains a JSON-based “effectiveness score” for each (URL, technique) pair, allowing incremental learning.
 
-Usage
------
+---
 
-1.  **Enable Proxy Capture (Optional)**
-    
-    *   In the XSS Optimizer tab, you can check “Proxy Capture” to automatically add new requests with parameters whenever Burp Proxy sees them.
-        
-2.  **Send Requests Manually**
-    
-    *   Within Burp (e.g., Proxy history, Target site map, Repeater), you can right-click a request -> **Send to XSS Optimizer**.
-        
-    *   The selected request(s) will appear in the plugin’s table, each parameter as a separate row.
-        
-3.  **Auto-Optimize / Manual Optimize**
-    
-    *   **Auto-Optimize**: Check the box in the plugin’s interface. The engine will automatically begin a Genetic Algorithm search for XSS vectors on new or pending items.
-        
-    *   **Optimize Selected**: Click the button in the plugin tab after selecting a row in the table to run the GA only for that row.
-        
-4.  **Monitor Results**
-    
-    *   The table displays columns: **URL**, **Method**, **Param** (name=value), **Payload**, **Code**, **Result**.
-        
-    *   When a GA run completes or finds an exploit, the row updates to **Result = exploitable**.
-        
-5.  **Review Logs**
-    
-    *   Check xss\_optimizer.csv for appended lines about each injection attempt.
-        
-    *   The plugin uses tech\_eff.json internally to store the “bonus” for techniques that previously worked, so you do not need to edit it manually.
-        
+## Features
 
-How It Works
-------------
+- **Automated XSS Discovery**: Injects payloads across GET/POST parameters, searching for both reflected and stored XSS.
+- **Genetic Algorithm Engine**:
+  - Evolves payloads over multiple generations.
+  - Rewards partial successes or reflections in the response.
+  - Applies different encoding/obfuscation “techniques.”
+- **GUI Integration**:
+  - Dedicated “XSS Optimizer” tab in Burp Suite.
+  - Right-click menu item: “Send to XSS Optimizer.”
+- **Result Tracking**:
+  - Writes attempts to a CSV file (`xss_optimizer.csv`).
+  - Maintains a `tech_eff.json` to store which technique has historically worked on a given URL.
 
-### Architecture Overview
+---
 
-1.  **Burp Suite Integration**: Hooks into Proxy, Repeater, and right-click menus to gather requests.
-    
-2.  **Request/Response Manager**: Takes a base request, injects payloads, sends them, and analyzes the final response code and body.
-    
-3.  **Genetic Algorithm Core**: Builds a population of (payload\_base, technique, length\_val), evolves them, checks success in partial or full injection.
-    
-4.  **Persistence**: Logs all attempts in CSV, stores technique effectiveness in JSON.
-    
+## Requirements
 
-### Genetic Algorithm Core
+- **Burp Suite** 2.x (or newer), either Community or Professional Edition.
+- **Java 8+** (Recommended) on the system where Burp is running.
+- **Jython** (if using a Python-based approach) or the plugin compiled as a JAR (Java) for easy loading in Burp.
 
-*   **Population**: Each individual is a (base\_payload\_idx, technique\_idx, length\_val).
-    
-*   **Fitness**: Higher if the plugin finds unique\_id reflected, or if the response code = 200 with script execution. A bonus is added if technique historically succeeded on that URL.
-    
-*   **Selection**: Sort by fitness, pick top k for “breeding.”
-    
-*   **Crossover**: For each gene, randomly inherit from father or mother.
-    
-*   **Mutation**: Randomly alter (base\_payload\_idx, technique\_idx, length\_val) with a small probability.
-    
-*   **Iteration**: Repeat for a number of generations or until an exploitable XSS is found.
-    
+---
+
+## Installation
+
+1. **Obtain the Extension**  
+   - Download or clone the repository containing the XSS Optimizer code.
+   - If distributed as a `.py` file (e.g., `XSSOptimizer-1.0.py`), ensure you have it locally.
+
+2. **Load into Burp Suite**  
+   - In Burp, navigate to **Extender** > **Extensions** > **Add**.
+   - **Extension Type**: python (if `.py`).
+   - **Extension File**: select the path to `XSSOptimizer-1.0.py`.
+   - Burp should confirm successful loading: “XSS Optimizer loaded.”
+
+3. **Verify**  
+   - A new tab labeled  “XSS Optimizer” should appear in Burp Suite’s top menu.
+   - Any load-time messages will appear in the **Extender** console.
+
+---
+
+## Usage
+
+1. **Capturing Requests**  
+   - (Optional) In the “XSS Optimizer” tab, check **Proxy Capture** if you want every new Proxy request with parameters to be queued automatically.
+   - Alternatively, right-click on any HTTP request in Burp (e.g., Proxy history, Target, Repeater) and choose **“Send to XSS Optimizer”**.
+
+2. **Managing the Table**  
+   - Each parameter is listed as a row in the XSS Optimizer tab:
+     - **URL**: The request’s URL.
+     - **Method**: GET or POST.
+     - **Param**: The real parameter name=value extracted.
+     - **Payload**: Once the GA is running, it shows the best (current) payload for that row.
+     - **Code**: Latest HTTP status code from injection attempts.
+     - **Result**: e.g., “exploitable” or “no explotable,” indicating the GA’s final assessment.
+
+3. **Starting the GA**  
+   - **Auto-Optimize**: If enabled, newly added rows are automatically tested.
+   - Or select a row and click **“Optimize Selected”**. The GA then runs in the background, updating the table.
+
+4. **Observing Outputs**  
+   - The table updates in real time: if the GA finds an exploit, the row’s Result changes to “exploitable.”
+   - Detailed logs go to the CSV file. The plugin also updates its JSON-based effectiveness record.
+
+---
+
+## How It Works
+
+### Architecture
+
+1. **Burp Suite Integration**: Hooks into Proxy events, context menus, Repeater, etc.  
+2. **XSS Optimizer Core**: The Genetic Algorithm that orchestrates payload generation, selection, crossover, and mutation.  
+3. **Request/Response Manager**: Injects the GA’s chosen payload, sends it, analyzes the final response.  
+4. **Persistence**: Writes to `xss_optimizer.csv`, updates `tech_eff.json`.
+
+### Genetic-Algorithm Core
+
+- **Population**: Each individual is `(base_payload_index, technique_index, length_value)`.
+- **Evaluation** (Fitness):
+  - Infill a random ID, apply chosen technique (e.g., `urlEncode`, `polyglot`).
+  - Inject into request parameter, send, parse response.
+  - Score = 10 if fully exploitable, lower if partial reflection or error.
+  - Historical “bonus” if that technique previously succeeded on that URL.
+- **Selection + Reproduction**:
+  - Sort by fitness, pick top survivors.
+  - **Crossover** merges gene segments from two parents.  
+  - **Mutation** randomly changes one gene (new technique, new payload index, new length).
+- **Iterate** until exploit or max attempts.
 
 ### Key Components
 
-*   **evaluate\_xss()**: Builds the mutated payload, updates the parameter in the request, sends it, and scores the result.
-    
-*   **optimize\_task()**: The GA process that runs in a background thread, controlling the generational loop.
-    
+- **`evaluate_xss()`**: Builds the mutated payload, updates the request parameter, sends it, and calculates a score based on reflection or script execution.  
+- **`optimize_task()`**: Orchestrates the GA loop in a background thread, repeatedly refining the population’s individuals over multiple generations.
 
-Configuration
--------------
-
-You can configure various parts in the **XSS Optimizer** tab within Burp:
-
-*   **Proxy Capture**: Toggle whether to automatically add new requests from the Proxy.
-    
-*   **Auto-Optimize**: Run the GA automatically on new parameters without manual clicks.
-    
-*   **(Advanced)** Modify the plugin’s source code to tweak COMMON\_PAYLOADS, TECHNIQUES, or the GA parameters (pop\_size, generations, mutation rate, etc.).
-    
-
-Results and Logs
-----------------
-
-1.  **Table Columns** in XSS Optimizer tab:
-    
-    *   **URL**: Full or partial URL.
-        
-    *   **Method**: GET/POST.
-        
-    *   **Param**: Name=Value extracted from the request.
-        
-    *   **Payload**: The latest GA-chosen payload with the highest score.
-        
-    *   **Code**: HTTP status code from the best attempt.
-        
-    *   **Result**: “exploitable” / “no explotable” / “pendiente” / etc.
-        
-2.  **CSV File** (xss\_optimizer.csv):
-    
-    *   Appends a line each time an injection is tested:
-        
-        *   ID,URL,Param,Method,Status,Result,Payload
-            
-3.  **tech\_eff.json**:
-    
-    *   jsonCopiar{ "http://example.com##url": 3, "http://example.com##polyglot": 1}
-        
-    *   Higher values indicate it worked multiple times.
-        
-
-Advanced Topics
----------------
-
-*   **Context Awareness**: You can enhance the plugin to detect whether the param is inserted in an attribute, JavaScript context, or HTML text, and pick payloads accordingly.
-    
-*   **Hybrid Approaches**: Combine the GA with machine learning models that guess the best technique by analyzing the response pattern.
-    
-*   **Distributed Deployment**: If you want to scale test large sites, consider distributing GA across multiple machines.
-    
-
-Limitations and Known Issues
-----------------------------
-
-*   **Request Volume**: A GA might generate many requests, possibly triggering rate-limits or WAF lockouts.
-    
-*   **Context**: By default, it is not fully “context-aware.” It attempts a variety of injection styles but does not automatically parse the HTML to see if it is in an attribute vs. text node.
-    
-*   **Session Handling**: You must ensure you are authenticated or capturing cookies in Burp so that the plugin reuses them for stored/reflected XSS checks.
-    
-*   **Heuristic**: The success depends on how the plugin’s evaluate\_xss() method assigns scores to partial reflections or encodings.
-    
-
-FAQ
 ---
 
-1.  **Why is the plugin not finding any exploit on a known vulnerable site?**
-    
-    *   Check if “Proxy Capture” or “Auto-Optimize” are enabled. Also verify the parameter’s name-value is truly vulnerable, and that the GA has enough attempts (pop\_size, generations).
-        
-2.  **Does it handle multi-parameter injection (e.g. multiple fields)?**
-    
-    *   The plugin enumerates each parameter individually. Each gets its own line.
-        
-3.  **What about other vulnerabilities (SQLi, RCE)?**
-    
-    *   This plugin is focused on XSS. However, the framework could be extended to other injection types.
-        
+## Configuration
 
-License
--------
+- **Proxy Capture**: Toggles whether new Proxy requests are queued automatically.
+- **Auto-Optimize**: Runs the GA on newly added rows without manual clicks.
+- **(Advanced)**: Modify the plugin’s source to change the population size, generations, or expand `COMMON_PAYLOADS` / `TECHNIQUES`.
 
-XSS Optimizer is released under the MIT License. See the LICENSE file for details.
+---
 
-**Thank you for using XSS Optimizer!**For further discussion or contributions, please open issues or pull requests in the repository, or contact the author(s).
+## Logs and Persistence
+
+1. **`xss_optimizer.csv`**:  
+   - Each row has `ID,URL,Param,Method,Status,Result,Payload`.  
+   - Written every time the plugin sends an injection attempt.
+
+2. **`tech_eff.json`**:  
+   - Stores `(URL##Technique) : bonusScore` to reward repeated success of a technique on the same domain or path.
+
+---
+
+## Advanced Topics
+
+- **Context-Aware**: Potentially modify the plugin to detect whether injection is in HTML text vs attribute vs. JS context.
+- **Scaling**: GA can generate numerous requests. Consider rate-limits or WAF interactions.
+- **Combining ML**: Pair the GA approach with a classifier to guess best technique given certain response patterns, reducing generational cycles.
+
+---
+
+## Known Limitations
+
+1. **High Request Count**: The GA must evaluate multiple individuals each generation, possibly leading to large request volumes.
+2. **Not Fully Context-Aware**: By default, it uses a broad set of payloads, which might not always match the injection context precisely.
+3. **Session Management**: The plugin reuses Burp’s session/cookies, but if the application has heavy CSRF measures or reauth requirements, more manual steps may be needed.
+4. **Partial**: Focuses mainly on XSS. Extending to other injection classes (SQLi, Command Injection) would require new logic and payload sets.
+
+---
+
+## FAQ
+
+**Q1**: *Why am I not finding exploits on a known vulnerable page?*  
+**A**: Ensure the parameter truly is vulnerable and that you have “Auto-Optimize” or manual “Optimize Selected” in operation. Also verify you have enough GA attempts (pop size, generation count).
+
+**Q2**: *Does it handle multi-parameter body?*  
+**A**: Yes. Each parameter is typically listed as a separate row. The GA runs for each row individually.
+
+**Q3**: *Can I add custom payloads?*  
+**A**: Yes, edit the `COMMON_PAYLOADS` array in the source code to incorporate new or more advanced payloads.
+
+**Q4**: *Is this plugin free/open source?*  
+**A**: Yes, licensed under an open license (see below). Feel free to fork and extend it.
+
+---
+
+## License
+
+XSS Optimizer is distributed under the [MIT License](https://opensource.org/licenses/MIT). Refer to the `LICENSE` file in this repository for details.
+
+--- 
+
+**Thank you for using XSS Optimizer!** 
+
+If you have suggestions or would like to contribute, please open an issue or submit a pull request on GitHub.
+
