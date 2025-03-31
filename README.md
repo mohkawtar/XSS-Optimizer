@@ -128,8 +128,6 @@ How It Works
 
 ### Architecture Overview
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   diffCopiar+-----------------------------+  +--------------------------+  |  Burp Suite Integration     |  |  Genetic Algorithm Core  |  |  (Extender, Proxy, UI)      |  |  (Population, Eval, ...) |  +-----------+-----------------+  +------------+-------------+              |                                |              v                                v  +---------------------------+     +---------------------------+  |    Request/Response Mgr   |     |    Persistence/Logs      |  |  (Inject, send, parse)    |     |  (CSV, JSON for bonus)   |  +---------------------------+     +---------------------------+   `
-
 1.  **Burp Suite Integration**: Hooks into Proxy, Repeater, and right-click menus to gather requests.
     
 2.  **Request/Response Manager**: Takes a base request, injects payloads, sends them, and analyzes the final response code and body.
