@@ -1,0 +1,21 @@
+{
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_r/?name=mojk##url": 1, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_r/?name=eval%28String.fromCharCode%2839%2C97%2C108%2C101%29%29test+##tag_obfuscate": 1, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_r/?name=testhhhhh##tag_obfuscate": 1, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_s/##url": 3, 
+  "http://localhost:80/DVWA-master/vulnerabilities/xss_r/?name=fffff##none": 1, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_r/?name=eval%28String.fromCharCode%2839%2C97%2C108%2C101%29%29test+##url": 3, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_s/##none": 12, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_r/?name=testhhhhh##url": 8, 
+  "http://localhost:80/DVWA-master/vulnerabilities/xss_r/?name=fffff##url": 3, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_r/?name=eval%28String.fromCharCode%2839%2C97%2C108%2C101%29%29test+##polyglot": 1, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_s/##tag_obfuscate": 4, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_r/?name=testhhhhh##none": 1, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_s/##js_obfuscate": 1, 
+  "http://localhost:80/DVWA-master/vulnerabilities/xss_r/?name=fffff##polyglot": 1, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_r/?name=testhhhhh##polyglot": 2, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_s/##attr_obfuscate": 4, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_s/##html": 4, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_s/##polyglot": 10, 
+  "http://192.168.131.130:80/dvwa/vulnerabilities/xss_s/x##polyglot": 6
+}
