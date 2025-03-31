@@ -1,0 +1,10 @@
+{
+  "name": "XSSOptimizer",
+  "version": "1.0",
+  "min_burp_version": "2021.1",
+  "author": "Mohammed Lakhouaja",
+  "description": "XSS Optimizer automates the process of finding exploitable XSS (Cross-Site Scripting) by using evolutionary search based in artificial intelligence genetic algorithm GA .",
+  "github": "https://github.com/mohkawtar/XSS-Optimize",
+  "dependencies": ["Jython 2.7.2"],
+  "tags": ["scanner", "utility", "XSS", "IA"]
+}
