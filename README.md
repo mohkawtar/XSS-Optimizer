@@ -68,7 +68,7 @@ Installation
 
 1.  **Download the Extension**
     
-    *   You can clone this repository or download the plugin JAR file (e.g., XSSOptimizer-1.0.jar).
+    *   You can clone this repository or download the plugin .py file (e.g., XSSOptimizer-1.0.py).
         
 2.  **Load Extension in Burp Suite**
     
@@ -78,15 +78,15 @@ Installation
         
     *   Under Extension details:
         
-        *   **Extension Type**: Java
+        *   **Extension Type**: python
             
-        *   **Extension File**: Select XSSOptimizer-1.0.jar
+        *   **Extension File**: Select XSSOptimizer-1.0.py
             
     *   Wait for Burp Suite to load the extension. You should see a message: XSS Optimizer loaded successfully.
         
 3.  **Verify Installation**
     
-    *   A new tab named **XSS GA** or **XSS Optimizer** should appear at the top of Burp’s main interface.
+    *   A new tab named **XSS Optimizer** should appear at the top of Burp’s main interface.
         
     *   In the **Extender** -> **Extensions** tab, you should see the status: Loaded.
         
