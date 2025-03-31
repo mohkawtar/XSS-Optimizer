@@ -111,7 +111,7 @@ Key highlights:
 1. **Burp Suite Integration**: Hooks into Proxy events, context menus, Repeater, etc.  
 2. **XSS Optimizer Core**: The Genetic Algorithm that orchestrates payload generation, selection, crossover, and mutation.  
 3. **Request/Response Manager**: Injects the GA’s chosen payload, sends it, analyzes the final response.  
-4. **Persistence**: Writes to `xss_optimizer.csv`, updates `tech_eff.json for windows in this path "C:\Users\myuser\AppData\Local\Temp\xss_optimizer"`.
+4. **Persistence**: Writes to `xss_optimizer.csv`, updates `tech_eff.json in this path "C:\Users\myuser\AppData\Local\Temp\xss_optimizer"`.
 
 ### Genetic-Algorithm Core
 
